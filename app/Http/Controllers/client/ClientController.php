@@ -14,8 +14,8 @@ class ClientController extends Controller
     private function returnResponse($status, $message, $code)
     {
         return response([
-            'status' => $status,
-            'error'  => $message
+            'status'  => $status,
+            'message' => $message
         ], $code);
     }
 
@@ -29,7 +29,7 @@ class ClientController extends Controller
             'password' => Hash::make($validated['password'])
         ]);
 
-        return $this->returnResponse('create', 'client was created.', 201);
+        return $this->returnResponse('created', 'client was created.', 201);
     }
 
     private function checkIfExists($model, $data, $attribue)
@@ -59,7 +59,7 @@ class ClientController extends Controller
         if (!$user->websites()->whereId($website->id)->exists()) {
             $user->websites()->attach($website->id);
 
-            return $this->returnResponse('create', 'client subscribe to website.', 201);
+            return $this->returnResponse('created', 'client subscribed to website.', 201);
         }
 
         return $this->returnResponse('exists', 'client already subscribed.', 409);
