@@ -12,8 +12,19 @@ Route::prefix('v1')->group(function () {
         'as'     => 'client.'
     ], function () {
         Route::controller(ClientController::class)->group(function () {
-            Route::post('/', 'store')->name('store');
-            Route::post('/subscribe', 'subscribe')->name('subscribe');
+            Route::post('/register', 'store')
+                ->name('register');
+
+            Route::post('/login', 'authenticate')
+                ->name('login');
+
+            Route::post('/logout', 'logout')
+                ->name('logout')
+                ->middleware('auth:sanctum');
+
+            Route::post('/subscribe', 'subscribe')
+                ->name('subscribe')
+                ->middleware('auth:sanctum');
         });
     });
 

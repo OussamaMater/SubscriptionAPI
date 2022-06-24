@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\client;
 
 use App\Models\User;
+use App\Models\Website;
+use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\SubscribeClientRequest;
-use App\Models\Website;
 
 class ClientController extends Controller
 {
@@ -19,17 +21,19 @@ class ClientController extends Controller
         ], $code);
     }
 
-    public function store(StoreClientRequest $request)
+    public function register(StoreClientRequest $request)
     {
         $validated = $request->validated();
 
-        User::create([
+        $user = User::create([
             'name'     => $validated['name'],
             'email'    => $validated['email'],
             'password' => Hash::make($validated['password'])
         ]);
 
-        return $this->returnResponse('created', 'client was created.', 201);
+        $token = $user->createToken(Str::random(10))->plainTextToken;
+
+        return $this->returnResponse('success', $token, 201);
     }
 
     private function checkIfExists($model, $data, $attribue)
@@ -43,18 +47,40 @@ class ClientController extends Controller
         return $model;
     }
 
+    public function authenticate(UserLoginRequest $request)
+    {
+        $validated = $request->validated();
+
+        $user = User::whereEmail($validated['email'])->first();
+        if (is_null($user)) {
+            return $this->returnResponse('failed', 'could not find a matching account.', 404);
+        }
+
+        if (!Hash::check($validated['password'], $user->password)) {
+            return $this->returnResponse('failed', 'invalid credentials.', 401);
+        }
+
+        $token = $user->createToken(Str::random(10))->plainTextToken;
+
+        return $this->returnResponse('success', $token, 201);
+    }
+
+    public function logout()
+    {
+        auth()->user()->tokens()->delete();
+
+        return $this->returnResponse('success', 'user logged out.', 200);
+    }
+
     public function subscribe(SubscribeClientRequest $request)
     {
         $validated = $request->validated();
 
-        // Note that in real life we will be testing a token otherwise using the Auth facade.
-        if (!($user = $this->checkIfExists(User::class, $validated, 'user'))) {
-            return $this->returnResponse('error', 'user was not found.', 404);
-        }
-
         if (!($website = $this->checkIfExists(Website::class, $validated, 'website'))) {
             return $this->returnResponse('error', 'website was not found', 404);
         }
+
+        $user = auth()->user();
 
         if (!$user->websites()->whereId($website->id)->exists()) {
             $user->websites()->attach($website->id);

@@ -67,6 +67,43 @@ The REST API to the example app is described below.
     "error": "client was created."
     }
 
+## Login a Client
+
+### Request
+
+`POST /api/v1/clients/login`
+
+    curl --request POST \
+    --url http://127.0.0.1:8000/api/v1/clients/login \
+    --header 'Accept: application/json' \
+    --header 'Content-Type: multipart/form-data' \
+    --form email=email@email.com \
+    --form password=password
+### Response
+
+    {
+    "status": "success",
+    "message": "2|eZaccuhspPrJTwK2iCB2xNj0Dj9qL3FH3rGoZLlD"
+    }
+
+## Logout a Client
+
+### Request
+
+`POST /api/v1/clients/logout`
+
+    curl --request POST \
+  --url http://127.0.0.1:8000/api/v1/clients/logout \
+  --header 'Accept: application/json' \
+  --header 'Authorization: Bearer 1|rWtxn3D5ERH3c7zU2Ai17fmJ9pWjhOwupB2b18Fw' \
+  --header 'Content-Type: multipart/form-data' \
+### Response
+
+    {
+    "status": "success",
+    "message": "2|eZaccuhspPrJTwK2iCB2xNj0Dj9qL3FH3rGoZLlD"
+    }
+
 ## Create a Website Post
 
 ### Request
@@ -83,8 +120,8 @@ The REST API to the example app is described below.
 ### Response
 
     {
-    "status": "created",
-    "message": "post was created."
+    "status": "success",
+    "message": "user logged out."
     }
 
 ## Subscribe to a Website
@@ -96,6 +133,7 @@ The REST API to the example app is described below.
     curl --request POST \
     --url http://127.0.0.1:8000/api/v1/clients/subscribe \
     --header 'Accept: application/json' \
+    --header 'Authorization: Bearer 1|rWtxn3D5ERH3c7zU2Ai17fmJ9pWjhOwupB2b18Fw' \
     --header 'Content-Type: multipart/form-data' \
     --form user=1 \
     --form website=10
