@@ -135,7 +135,6 @@ The REST API to the example app is described below.
     --header 'Accept: application/json' \
     --header 'Authorization: Bearer 1|rWtxn3D5ERH3c7zU2Ai17fmJ9pWjhOwupB2b18Fw' \
     --header 'Content-Type: multipart/form-data' \
-    --form user=1 \
     --form website=10
 ### Response
 
