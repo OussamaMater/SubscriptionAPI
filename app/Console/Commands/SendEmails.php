@@ -2,9 +2,13 @@
 
 namespace App\Console\Commands;
 
+use Carbon\Carbon;
+use App\Models\User;
 use App\Mail\SubsEmail;
 use App\Models\Website;
+use App\Models\SendEmailLog;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -15,7 +19,7 @@ class SendEmails extends Command
      *
      * @var string
      */
-    protected $signature = 'mail:send';
+    protected $signature = 'mail:send {--force}';
 
     /**
      * The console command description.
@@ -31,14 +35,29 @@ class SendEmails extends Command
      */
     public function handle()
     {
-        $this->info('Sending emails...');
+        $forced   = $this->option('force');
+        $executed = SendEmailLog::where('created_at', '>=', Carbon::now()->subDay())->count();
 
-        $websites = Website::all();
-        foreach ($websites as $website) {
-            foreach ($website->subscribes as $recipient)
-                Mail::to($recipient->email)->queue(new SubsEmail($recipient->name));
+        if ($forced || ($executed == 0)) {
+            SendEmailLog::create();
+            $usersCount = DB::table('subscribes')->select()->count();
+
+            $this->info('Sending emails...');
+            $bar = $this->output->createProgressBar($usersCount);
+            $bar->start();
+
+            $websites = Website::all();
+            foreach ($websites as $website) {
+                foreach ($website->subscribes as $recipient) {
+                    Mail::to($recipient->email)->queue(new SubsEmail($recipient->name));
+                    $bar->advance();
+                }
+            }
+
+            $bar->finish();
+            $this->info("\n" . 'done!');
+        } else {
+            $this->error('Can\'t send emails now...');
         }
-
-        $this->info('done!');
     }
 }
