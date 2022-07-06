@@ -46,7 +46,7 @@ class SendEmails extends Command
             $bar = $this->output->createProgressBar($usersCount);
             $bar->start();
 
-            $websites = Website::all();
+            $websites = Website::with('subscribes')->get();
             foreach ($websites as $website) {
                 foreach ($website->subscribes as $recipient) {
                     Mail::to($recipient->email)->queue(new SubsEmail($recipient->name));
